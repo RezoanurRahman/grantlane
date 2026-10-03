@@ -1,0 +1,9 @@
+{
+  "name": "Grantlane",
+  "slug": "grantlane",
+  "summary": "Grantlane is a calm, local-first funding pipeline for small teams to track grant opportunities, application stages, deadlines, checklists, and recent decisions. It pairs a focused Preact workspace with a typed Hono API and deterministic in-memory data.",
+  "frontend": "Preact 10 + Vite 7",
+  "backend": "Hono 4 + Node adapter",
+  "storage": "in-memory",
+  "language": "typescript"
+}
