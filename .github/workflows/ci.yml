@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, build, health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PORT: '8787'
+      HEALTH_URL: http://127.0.0.1:8787/api/health
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
+
+      - name: Start server and poll health endpoint
+        run: |
+          npm start &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error "$HEALTH_URL" > /dev/null; then
+              echo "Health check passed on attempt $attempt: $HEALTH_URL"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Health check failed after 30 attempts: $HEALTH_URL" >&2
+          exit 1
